@@ -16,7 +16,8 @@ Opening the page without `?w=` shows a lock screen preview with copyable links. 
 
 ### Options
 
-- `&c=000000` sets the widget color (hex, no `#`). Default is white.
+- `&c=ffffff` sets the widget color (hex, no `#`). Default is white. Keep it light: on the lock screen, brightness is what shows.
+- `&bg=clear` uses a true alpha-transparent background instead of black. By default the widget is drawn on pure black, because iOS renders lock screen widgets in vibrant mode where black is fully see-through and anything lighter becomes frosted glass.
 - `&hemi=n` draws the moon as seen from the northern hemisphere. Default is southern (Brazil).
 
 Labels are in Brazilian Portuguese and dates use the device's local time.
