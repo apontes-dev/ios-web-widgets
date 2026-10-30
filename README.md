@@ -11,13 +11,15 @@ No build step, no dependencies: one `index.html`.
 | `?w=rect` | Rectangular | Year-progress ring, weekday, date, moon phase, ISO week |
 | `?w=circle` | Circular | Day of the month with a month-progress ring |
 | `?w=moon` | Circular | Moon phase with % illuminated |
+| `?w=week` | Rectangular | This week, Sunday to Saturday, with today highlighted |
+| `?w=month` | Home screen, medium | Full month grid, big date, moon phase, year progress |
 
 Opening the page without `?w=` shows a lock screen preview with copyable links. If the page is loaded in a widget-sized viewport without `?w=`, it picks `rect` for wide spaces and `circle` for square ones.
 
 ### Options
 
 - `&c=ffffff` sets the widget color (hex, no `#`). Default is white. Keep it light: on the lock screen, brightness is what shows.
-- `&bg=clear` uses a true alpha-transparent background instead of black. By default the widget is drawn on pure black, because iOS renders lock screen widgets in vibrant mode where black is fully see-through and anything lighter becomes frosted glass.
+- `&bg=clear` uses a true alpha-transparent background; `&bg=black` forces black. By default lock screen widgets are drawn on pure black, because iOS renders lock screen widgets in vibrant mode where black is fully see-through and anything lighter becomes frosted glass. The home screen `month` widget defaults to a dark gradient surface.
 - `&hemi=n` draws the moon as seen from the northern hemisphere. Default is southern (Brazil).
 
 Labels are in Brazilian Portuguese and dates use the device's local time.

@@ -10,13 +10,15 @@
   (function(){
     var w=(new URLSearchParams(location.search).get('w')||'').toLowerCase();
     var tiny=innerHeight<=240&&innerWidth<=520;
-    if(['rect','circle','moon'].indexOf(w)>-1||(!w&&tiny)){
-      document.documentElement.classList.add('widget');
-      // iOS renders lock screen widgets in vibrant mode: brightness becomes opacity,
+    if(['rect','circle','moon','week','month'].indexOf(w)>-1||(!w&&tiny)){
+      var root=document.documentElement, bg=(new URLSearchParams(location.search).get('bg')||'').toLowerCase();
+      root.classList.add('widget');
+      // Lock screen widgets: iOS renders them in vibrant mode, where brightness becomes opacity,
       // so pure black is fully see-through while white turns into frosted glass.
-      // Paint black by default; ?bg=clear keeps a true alpha background instead.
-      if((new URLSearchParams(location.search).get('bg')||'').toLowerCase()!=='clear')
-        document.documentElement.classList.add('lock');
+      // Home screen widget (month): a dark surface, since black there is just black.
+      // ?bg=clear keeps a true alpha background, ?bg=black forces black.
+      if(bg==='black'||(bg!=='clear'&&w!=='month')) root.classList.add('lock');
+      else if(bg!=='clear') root.classList.add('home');
       var m=document.querySelector('meta[name="theme-color"]'); if(m) m.remove();
     }
   })();
@@ -36,6 +38,44 @@
     color-scheme:only light;overflow:hidden}
   html.widget *{box-shadow:none!important;text-shadow:none!important}
   html.widget.lock,html.widget.lock body{background:#000!important;background-color:#000!important}
+  html.widget.home,html.widget.home body{background-color:#0d0e1c!important;
+    background-image:radial-gradient(110% 120% at 0% 0%,rgba(122,101,255,.32) 0%,transparent 55%),
+      radial-gradient(90% 110% at 100% 100%,rgba(17,163,156,.22) 0%,transparent 60%)!important}
+
+  /* week strip (lock screen, rectangular) */
+  .stage.week{width:170px;height:76px}
+  .week .hd{position:absolute;left:4px;right:4px;top:4px;display:flex;justify-content:space-between;align-items:baseline;
+    font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;line-height:1}
+  .week .hd span+span{opacity:.6}
+  .week .days{position:absolute;left:0;right:0;top:21px;bottom:2px;display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+  .week .d{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:12px;line-height:1}
+  .week .d b{font-size:8.5px;font-weight:700;letter-spacing:.04em;opacity:.6}
+  .week .d i{font-style:normal;font-size:16px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .week .d.past{opacity:.42}
+  .week .d.today{background:var(--ink);color:#000}
+  .week .d.today b{opacity:.7}
+
+  /* month (home screen, medium) */
+  .stage.month{width:338px;height:158px}
+  .month .side{position:absolute;left:18px;top:16px;bottom:16px;width:104px;display:flex;flex-direction:column}
+  .month .wd{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.65;line-height:1}
+  .month .big{font-size:50px;font-weight:700;letter-spacing:-.045em;line-height:.88;margin-top:7px;font-variant-numeric:tabular-nums}
+  .month .my{font-size:13.5px;font-weight:600;margin-top:5px;line-height:1}
+  .month .my span{opacity:.55;font-weight:600}
+  .month .foot{margin-top:auto;display:flex;flex-direction:column;gap:6px;font-size:10px;font-weight:600;line-height:1}
+  .month .foot .mn{display:flex;align-items:center;gap:5px;opacity:.85}
+  .month .foot svg{width:12px;height:12px;flex:none}
+  .month .bar{height:4px;border-radius:2px;background:color-mix(in srgb,var(--ink) 20%,transparent);overflow:hidden}
+  .month .bar i{display:block;height:100%;border-radius:2px;background:var(--ink)}
+  .month .yl{display:flex;justify-content:space-between;opacity:.6;font-size:9.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .month .grid{position:absolute;left:132px;right:14px;top:14px;bottom:12px;display:flex;flex-direction:column;justify-content:center;gap:1px}
+  .month .r{display:grid;grid-template-columns:repeat(7,1fr);height:19px;align-items:center;justify-items:center}
+  .month .r.h{height:16px;font-size:9px;font-weight:700;letter-spacing:.06em;opacity:.5}
+  .month .c{width:21px;height:19px;display:flex;align-items:center;justify-content:center;border-radius:10px;
+    font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums}
+  .month .c.sun{opacity:.6}
+  .month .c.past{opacity:.35}
+  .month .c.today{background:var(--ink);color:#12101f;font-weight:800;opacity:1}
   .viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
   .stage{position:relative;flex:none;transform-origin:center center;color:var(--ink)}
   .stage.rect{width:170px;height:76px}
@@ -88,7 +128,7 @@
   .wall::after{content:"";position:absolute;inset:0;backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px)}
   main{max-width:520px;margin:0 auto;padding:max(28px,env(safe-area-inset-top)) 16px 48px}
   .lock{text-align:center;padding:18px 0 8px}
-  .lock .ldate{font-size:19px;font-weight:600;opacity:.92;text-transform:capitalize}
+  .lock .ldate{font-size:19px;font-weight:600;opacity:.92}
   .lock .ltime{font-size:clamp(76px,24vw,104px);font-weight:700;letter-spacing:-.04em;line-height:1;margin-top:2px;
     background:linear-gradient(180deg,#fff, rgba(255,255,255,.78));-webkit-background-clip:text;background-clip:text;color:transparent}
   .row{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:14px}
@@ -105,7 +145,11 @@
   ol{padding-left:20px;display:grid;gap:9px;font-size:14.5px;line-height:1.45;opacity:.92}
   .opts{display:grid;gap:8px;font-size:14px;line-height:1.45;opacity:.9}
   .opts code{font:12.5px ui-monospace,Menlo,monospace;background:rgba(255,255,255,.12);padding:2px 6px;border-radius:6px}
-  .foot{text-align:center;font-size:12px;opacity:.5;margin-top:24px}
+  body.preview .foot{text-align:center;font-size:12px;opacity:.5;margin-top:24px}
+  .homemock{margin-top:28px;display:flex;flex-direction:column;align-items:center;gap:8px}
+  .homemock .cap{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.6}
+  .homemock .hw{display:block;border:0;width:100%;max-width:338px;aspect-ratio:338/158;border-radius:22px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35)}
 </style>
 </head>
 <body>
@@ -177,11 +221,57 @@
     return {now,y,yearPct,monthPct,weekday,monthLong,monthShort,day:now.getDate(),week:isoWeek(now),moon:moonInfo(now)};
   }
 
+  const DOW=['D','S','T','Q','Q','S','S']; // Brazilian calendars start on Sunday
+  function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+  function weekHTML(i){
+    const now=i.now, start=new Date(now.getFullYear(),now.getMonth(),now.getDate()-now.getDay());
+    let cells='';
+    for(let k=0;k<7;k++){
+      const d=new Date(start.getFullYear(),start.getMonth(),start.getDate()+k);
+      const cls=sameDay(d,now)?'today':(d<now?'past':'');
+      cells+=`<div class="d ${cls}"><b>${DOW[k]}</b><i>${d.getDate()}</i></div>`;
+    }
+    return `<div class="stage week" role="img" aria-label="Semana ${i.week}, hoje ${i.day} de ${i.monthLong}">
+      <div class="hd"><span>${i.monthLong}</span><span>Sem ${i.week}</span></div>
+      <div class="days">${cells}</div></div>`;
+  }
+  function monthHTML(i){
+    const now=i.now, y=now.getFullYear(), m=now.getMonth();
+    const offset=new Date(y,m,1).getDay(), dim=new Date(y,m+1,0).getDate();
+    const cells=[];
+    for(let k=0;k<offset;k++) cells.push('<div class="c"></div>');
+    for(let d=1;d<=dim;d++){
+      const dow=(offset+d-1)%7;
+      const cls=d===i.day?'today':(d<i.day?'past':(dow===0?'sun':''));
+      cells.push(`<div class="c ${cls}">${d}</div>`);
+    }
+    while(cells.length%7) cells.push('<div class="c"></div>');
+    let rows=`<div class="r h">${DOW.map(x=>`<span>${x}</span>`).join('')}</div>`;
+    for(let k=0;k<cells.length;k+=7) rows+=`<div class="r">${cells.slice(k,k+7).join('')}</div>`;
+    const daysLeft=Math.round((new Date(y+1,0,1)-new Date(y,m,i.day))/864e5)-1;
+    return `<div class="stage month" role="img" aria-label="${i.weekday}, ${i.day} de ${i.monthLong} de ${i.y}">
+      <div class="side">
+        <div class="wd">${i.weekday}</div>
+        <div class="big">${i.day}</div>
+        <div class="my">${i.monthLong} <span>${i.y}</span></div>
+        <div class="foot">
+          <div class="mn">${moonSVG(i.moon.p,12,4)}<span>${i.moon.short}</span></div>
+          <div class="bar"><i style="width:${i.yearPct.toFixed(1)}%"></i></div>
+          <div class="yl"><span>${Math.floor(i.yearPct)}% do ano</span><span>${daysLeft} dias</span></div>
+        </div>
+      </div>
+      <div class="grid">${rows}</div></div>`;
+  }
+
   /* ---------- widget mode ---------- */
   function renderWidget(){
     const i=info();
     let html='';
-    if(mode==='circle'){
+    if(mode==='week'){
+      html=weekHTML(i);
+    }else if(mode==='month'){
+      html=monthHTML(i);
+    }else if(mode==='circle'){
       html=`<div class="stage circle">${ring(i.monthPct,9)}
         <div class="center"><div class="day">${i.day}</div><div class="mon">${i.monthShort}</div></div></div>`;
     }else if(mode==='moon'){
@@ -216,7 +306,9 @@
     const urls=[
       {tag:'Retangular',q:'?w=rect',desc:'Progresso do ano, data, fase da lua e semana'},
       {tag:'Circular',q:'?w=circle',desc:'Dia do mês com anel de progresso do mês'},
-      {tag:'Lua',q:'?w=moon',desc:'Fase da lua com % iluminada'}
+      {tag:'Lua',q:'?w=moon',desc:'Fase da lua com % iluminada'},
+      {tag:'Semana',q:'?w=week',desc:'Bloqueio, retangular: semana atual com hoje destacado'},
+      {tag:'Calendário',q:'?w=month',desc:'Tela inicial, médio: mês inteiro, data e progresso do ano'}
     ];
     document.body.innerHTML=`
       <div class="wall"></div>
@@ -225,10 +317,16 @@
           <div class="ldate" id="ldate"></div>
           <div class="ltime" id="ltime"></div>
           <div class="row">
-            <iframe src="${base}?w=rect" width="170" height="76" title="Widget retangular" allowtransparency="true"></iframe>
-            <iframe src="${base}?w=circle" width="76" height="76" title="Widget circular" allowtransparency="true"></iframe>
-            <iframe src="${base}?w=moon" width="76" height="76" title="Widget lua" allowtransparency="true"></iframe>
+            <iframe src="${base}?w=rect&bg=clear" width="170" height="76" title="Widget retangular" allowtransparency="true"></iframe>
+            <iframe src="${base}?w=week&bg=clear" width="170" height="76" title="Widget semana" allowtransparency="true"></iframe>
+            <iframe src="${base}?w=circle&bg=clear" width="76" height="76" title="Widget circular" allowtransparency="true"></iframe>
+            <iframe src="${base}?w=moon&bg=clear" width="76" height="76" title="Widget lua" allowtransparency="true"></iframe>
           </div>
+        </section>
+
+        <section class="homemock">
+          <div class="cap">Tela inicial</div>
+          <iframe class="hw" src="${base}?w=month" title="Widget calendário"></iframe>
         </section>
 
         <section class="card glass">
@@ -245,8 +343,9 @@
           <h1>Como usar no Widget Web 27</h1>
           <ol>
             <li>Copie uma das URLs acima e crie um novo widget no app colando o link.</li>
-            <li>Ative a opção de <b>fundo transparente</b> para tela de bloqueio.</li>
-            <li>Na tela de bloqueio, toque e segure → <b>Personalizar</b> → toque na área de widgets e adicione o Widget Web no tamanho certo: retangular para <code style="font-size:12px">rect</code>, circular para <code style="font-size:12px">circle</code> e <code style="font-size:12px">moon</code>.</li>
+            <li>Na tela de bloqueio o fundo preto da página aparece transparente. Se surgir um vidro fosco, desative o <b>fundo transparente</b> do app.</li>
+            <li>Tela de bloqueio: toque e segure → <b>Personalizar</b> → adicione o Widget Web no tamanho certo: retangular para <code style="font-size:12px">rect</code> e <code style="font-size:12px">week</code>, circular para <code style="font-size:12px">circle</code> e <code style="font-size:12px">moon</code>.</li>
+            <li>Tela inicial: adicione o Widget Web no tamanho <b>médio</b> com a URL <code style="font-size:12px">month</code>.</li>
             <li>Escolha um intervalo de atualização automática (ex.: a cada hora) para manter data e lua em dia.</li>
           </ol>
         </section>
@@ -254,7 +353,8 @@
         <section class="card glass">
           <h1>Opções</h1>
           <div class="opts">
-            <div><code>&amp;c=000000</code> muda a cor (hex sem #). Padrão: branco.</div>
+            <div><code>&amp;c=ffffff</code> muda a cor (hex sem #). Padrão: branco.</div>
+            <div><code>&amp;bg=clear</code> fundo transparente de verdade; <code>&amp;bg=black</code> fundo preto.</div>
             <div><code>&amp;hemi=n</code> mostra a lua como no hemisfério norte. Padrão: sul (Brasil).</div>
           </div>
         </section>
@@ -262,7 +362,8 @@
       </main>`;
     const tick=()=>{
       const n=new Date();
-      document.getElementById('ldate').textContent=new Intl.DateTimeFormat('pt-BR',{weekday:'long',day:'numeric',month:'long'}).format(n);
+      const ld=new Intl.DateTimeFormat('pt-BR',{weekday:'long',day:'numeric',month:'long'}).format(n);
+      document.getElementById('ldate').textContent=ld.charAt(0).toUpperCase()+ld.slice(1);
       document.getElementById('ltime').textContent=new Intl.DateTimeFormat('pt-BR',{hour:'2-digit',minute:'2-digit'}).format(n);
     };
     tick(); setInterval(tick,10000);
@@ -273,7 +374,7 @@
     }));
   }
 
-  if(['rect','circle','moon'].includes(mode)){
+  if(['rect','circle','moon','week','month'].includes(mode)){
     document.documentElement.classList.add('widget');
     document.body.className='widget';
     document.body.innerHTML='<div class="viewport" id="vp"></div>';
