@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lock Widgets</title>
+<meta name="theme-color" content="#0b0d1a">
+<style>
+  :root{
+    --ink:#ffffff;
+    --font: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--font);-webkit-font-smoothing:antialiased;color:var(--ink)}
+
+  /* ---------- WIDGET MODE ---------- */
+  body.widget{background:transparent;overflow:hidden}
+  .viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  .stage{position:relative;flex:none;transform-origin:center center;color:var(--ink)}
+  .stage.rect{width:170px;height:76px}
+  .stage.circle,.stage.moon{width:76px;height:76px}
+
+  .ring{position:absolute}
+  .ring circle{fill:none;stroke:currentColor}
+  .ring .track{opacity:.22}
+  .ring .bar{stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%}
+
+  /* rect */
+  .rect .ring{left:2px;top:6px;width:64px;height:64px}
+  .rect .ringlabel{position:absolute;left:2px;top:6px;width:64px;height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+  .rect .pct{font-size:19px;font-weight:700;letter-spacing:-.02em}
+  .rect .pct small{font-size:10px;font-weight:600;opacity:.8;margin-left:1px}
+  .rect .yr{font-size:7.5px;font-weight:600;letter-spacing:.08em;opacity:.65;margin-top:3px;text-transform:uppercase}
+  .rect .col{position:absolute;left:76px;right:0;top:7px;bottom:6px;display:flex;flex-direction:column;justify-content:space-between}
+  .rect .wd{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;opacity:.7}
+  .rect .dt{font-size:21px;font-weight:700;letter-spacing:-.02em;line-height:1;white-space:nowrap}
+  .rect .dt span{font-size:13px;font-weight:600;opacity:.85;letter-spacing:0}
+  .rect .meta{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;opacity:.85;white-space:nowrap}
+  .rect .meta svg{width:13px;height:13px;flex:none}
+  .rect .meta .dot{opacity:.45}
+
+  /* circle */
+  .circle .ring,.moon .ring{inset:0;width:76px;height:76px}
+  .circle .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+  .circle .day{font-size:28px;font-weight:700;letter-spacing:-.03em}
+  .circle .mon{font-size:10px;font-weight:700;letter-spacing:.12em;opacity:.7;margin-top:2px;text-transform:uppercase}
+
+  /* moon */
+  .moon .disc{position:absolute;left:15px;top:8px;width:46px;height:46px}
+  .moon .lbl{position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.04em;opacity:.8}
+
+  /* ---------- PREVIEW MODE ---------- */
+  body.preview{
+    background:#0b0d1a;
+    min-height:100%;
+    color:#f4f5fb;
+  }
+  .wall{
+    position:fixed;inset:0;z-index:-1;
+    background:
+      radial-gradient(60% 45% at 18% 12%, #6a3df0 0%, transparent 70%),
+      radial-gradient(55% 40% at 88% 30%, #0fb9b1 0%, transparent 70%),
+      radial-gradient(70% 55% at 50% 100%, #ef5f8b 0%, transparent 72%),
+      linear-gradient(180deg,#14112b,#0b0d1a);
+    filter:saturate(1.1);
+  }
+  .wall::after{content:"";position:absolute;inset:0;backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px)}
+  main{max-width:520px;margin:0 auto;padding:max(28px,env(safe-area-inset-top)) 16px 48px}
+  .lock{text-align:center;padding:18px 0 8px}
+  .lock .ldate{font-size:19px;font-weight:600;opacity:.92;text-transform:capitalize}
+  .lock .ltime{font-size:clamp(76px,24vw,104px);font-weight:700;letter-spacing:-.04em;line-height:1;margin-top:2px;
+    background:linear-gradient(180deg,#fff, rgba(255,255,255,.78));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .row{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .row iframe{border:0;background:transparent;display:block;color-scheme:normal}
+  .glass{border-radius:22px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+    backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3)}
+  .card{margin-top:28px;padding:18px}
+  h1{font-size:15px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.7;margin-bottom:12px}
+  .url{display:flex;align-items:center;gap:10px;padding:10px 10px 10px 12px;border-radius:14px;background:rgba(0,0,0,.25);margin-top:8px}
+  .url .tag{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:8px;background:rgba(255,255,255,.14);flex:none}
+  .url code{flex:1;min-width:0;font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace;opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .url button{flex:none;font:600 13px var(--font);color:#0b0d1a;background:#fff;border:0;border-radius:10px;padding:8px 12px;cursor:pointer}
+  .url button.ok{background:#7ef0c6}
+  ol{padding-left:20px;display:grid;gap:9px;font-size:14.5px;line-height:1.45;opacity:.92}
+  .opts{display:grid;gap:8px;font-size:14px;line-height:1.45;opacity:.9}
+  .opts code{font:12.5px ui-monospace,Menlo,monospace;background:rgba(255,255,255,.12);padding:2px 6px;border-radius:6px}
+  .foot{text-align:center;font-size:12px;opacity:.5;margin-top:24px}
+</style>
+</head>
+<body>
+<script>
+(function(){
+  const qs = new URLSearchParams(location.search);
+  let mode = (qs.get('w')||'').toLowerCase();
+  // No ?w= given but the viewport is widget-sized: pick a layout from its shape.
+  if(!mode && innerHeight<=240 && innerWidth<=520) mode = innerWidth/innerHeight>=1.6 ? 'rect' : 'circle';
+  const color = qs.get('c');
+  const north = (qs.get('hemi')||'s').toLowerCase().startsWith('n');
+  if(color && /^[0-9a-f]{3,8}$/i.test(color)) document.documentElement.style.setProperty('--ink','#'+color);
+
+  /* ---------- data ---------- */
+  const SYNODIC = 29.530588853;
+  const NEW_MOON_REF = Date.UTC(2000,0,6,18,14); // known new moon
+  function moonInfo(d){
+    const days = (d.getTime()-NEW_MOON_REF)/864e5;
+    const p = ((days % SYNODIC)+SYNODIC)%SYNODIC / SYNODIC; // 0..1
+    const illum = (1-Math.cos(2*Math.PI*p))/2;
+    const names=['Lua nova','Crescente','Quarto crescente','Crescente gibosa','Lua cheia','Minguante gibosa','Quarto minguante','Minguante'];
+    const idx = Math.floor((p*8)+0.5)%8;
+    return {p, illum, name:names[idx]};
+  }
+  function moonSVG(p, size, strokeW){
+    const r=50, cx=50, cy=50;
+    const k=Math.cos(2*Math.PI*p);
+    const rx=Math.abs(k)*r;
+    const waxing=p<0.5;
+    let d;
+    if(waxing){
+      d=`M${cx},${cy-r} A${r},${r} 0 0 1 ${cx},${cy+r} A${rx},${r} 0 0 ${k>0?0:1} ${cx},${cy-r}Z`;
+    }else{
+      d=`M${cx},${cy-r} A${r},${r} 0 0 0 ${cx},${cy+r} A${rx},${r} 0 0 ${k>0?1:0} ${cx},${cy-r}Z`;
+    }
+    const flip = north ? '' : ` transform="translate(100 0) scale(-1 1)"`; // southern hemisphere view
+    return `<svg viewBox="-4 -4 108 108" width="${size}" height="${size}" aria-hidden="true">
+      <circle cx="50" cy="50" r="50" fill="currentColor" opacity=".18"/>
+      <g${flip}><path d="${d}" fill="currentColor"/></g>
+      <circle cx="50" cy="50" r="50" fill="none" stroke="currentColor" stroke-width="${strokeW}" opacity=".5"/>
+    </svg>`;
+  }
+  function isoWeek(d){
+    const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+    const day=t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-day);
+    const y0=new Date(Date.UTC(t.getUTCFullYear(),0,1));
+    return Math.ceil(((t-y0)/864e5+1)/7);
+  }
+  function ring(pct, stroke){
+    const r=50-stroke/2;
+    return `<svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
+      <circle class="track" cx="50" cy="50" r="${r}" stroke-width="${stroke}"/>
+      <circle class="bar" cx="50" cy="50" r="${r}" stroke-width="${stroke}" pathLength="100"
+        stroke-dasharray="${Math.max(pct,0.5).toFixed(2)} 100"/>
+    </svg>`;
+  }
+  function info(){
+    const now=new Date();
+    const y=now.getFullYear();
+    const y0=new Date(y,0,1), y1=new Date(y+1,0,1);
+    const yearPct=(now-y0)/(y1-y0)*100;
+    const dim=new Date(y,now.getMonth()+1,0).getDate();
+    const monthPct=((now.getDate()-1)+(now.getHours()*60+now.getMinutes())/1440)/dim*100;
+    const weekday=new Intl.DateTimeFormat('pt-BR',{weekday:'long'}).format(now).replace(/-feira$/,'');
+    const monthLong=new Intl.DateTimeFormat('pt-BR',{month:'long'}).format(now);
+    const monthShort=monthLong.slice(0,3);
+    return {now,y,yearPct,monthPct,weekday,monthLong,monthShort,day:now.getDate(),week:isoWeek(now),moon:moonInfo(now)};
+  }
+
+  /* ---------- widget mode ---------- */
+  function renderWidget(){
+    const i=info();
+    let html='';
+    if(mode==='circle'){
+      html=`<div class="stage circle">${ring(i.monthPct,9)}
+        <div class="center"><div class="day">${i.day}</div><div class="mon">${i.monthShort}</div></div></div>`;
+    }else if(mode==='moon'){
+      html=`<div class="stage moon"><div class="disc">${moonSVG(i.moon.p,46,2.5)}</div>
+        <div class="lbl">${Math.round(i.moon.illum*100)}%</div></div>`;
+    }else{
+      html=`<div class="stage rect">${ring(i.yearPct,8.5)}
+        <div class="ringlabel"><div class="pct">${Math.floor(i.yearPct)}<small>%</small></div><div class="yr">${i.y}</div></div>
+        <div class="col">
+          <div class="wd">${i.weekday}</div>
+          <div class="dt">${i.day} <span>${i.monthLong}</span></div>
+          <div class="meta">${moonSVG(i.moon.p,13,4)}<span>${i.moon.name}</span><span class="dot">·</span><span>Sem ${i.week}</span></div>
+        </div></div>`;
+    }
+    document.getElementById('vp').innerHTML=html;
+    fit();
+  }
+  function fit(){
+    const s=document.querySelector('.stage'); if(!s) return;
+    const w=s.offsetWidth,h=s.offsetHeight;
+    const k=Math.min(innerWidth/w, innerHeight/h);
+    s.style.transform=`scale(${k})`;
+  }
+
+  /* ---------- preview mode ---------- */
+  function renderPreview(){
+    document.body.className='preview';
+    const base=location.origin+location.pathname;
+    const urls=[
+      {tag:'Retangular',q:'?w=rect',desc:'Progresso do ano, data, fase da lua e semana'},
+      {tag:'Circular',q:'?w=circle',desc:'Dia do mês com anel de progresso do mês'},
+      {tag:'Lua',q:'?w=moon',desc:'Fase da lua com % iluminada'}
+    ];
+    document.body.innerHTML=`
+      <div class="wall"></div>
+      <main>
+        <section class="lock">
+          <div class="ldate" id="ldate"></div>
+          <div class="ltime" id="ltime"></div>
+          <div class="row">
+            <iframe src="${base}?w=rect" width="170" height="76" title="Widget retangular" allowtransparency="true"></iframe>
+            <iframe src="${base}?w=circle" width="76" height="76" title="Widget circular" allowtransparency="true"></iframe>
+            <iframe src="${base}?w=moon" width="76" height="76" title="Widget lua" allowtransparency="true"></iframe>
+          </div>
+        </section>
+
+        <section class="card glass">
+          <h1>URLs dos widgets</h1>
+          ${urls.map(u=>`
+            <div class="url">
+              <span class="tag">${u.tag}</span>
+              <code title="${u.desc}">${base}${u.q}</code>
+              <button data-u="${base}${u.q}">Copiar</button>
+            </div>`).join('')}
+        </section>
+
+        <section class="card glass">
+          <h1>Como usar no Widget Web 27</h1>
+          <ol>
+            <li>Copie uma das URLs acima e crie um novo widget no app colando o link.</li>
+            <li>Ative a opção de <b>fundo transparente</b> para tela de bloqueio.</li>
+            <li>Na tela de bloqueio, toque e segure → <b>Personalizar</b> → toque na área de widgets e adicione o Widget Web no tamanho certo: retangular para <code style="font-size:12px">rect</code>, circular para <code style="font-size:12px">circle</code> e <code style="font-size:12px">moon</code>.</li>
+            <li>Escolha um intervalo de atualização automática (ex.: a cada hora) para manter data e lua em dia.</li>
+          </ol>
+        </section>
+
+        <section class="card glass">
+          <h1>Opções</h1>
+          <div class="opts">
+            <div><code>&amp;c=000000</code> muda a cor (hex sem #). Padrão: branco.</div>
+            <div><code>&amp;hemi=n</code> mostra a lua como no hemisfério norte. Padrão: sul (Brasil).</div>
+          </div>
+        </section>
+        <div class="foot">Os widgets se ajustam automaticamente a qualquer tamanho de visualização.</div>
+      </main>`;
+    const tick=()=>{
+      const n=new Date();
+      document.getElementById('ldate').textContent=new Intl.DateTimeFormat('pt-BR',{weekday:'long',day:'numeric',month:'long'}).format(n);
+      document.getElementById('ltime').textContent=new Intl.DateTimeFormat('pt-BR',{hour:'2-digit',minute:'2-digit'}).format(n);
+    };
+    tick(); setInterval(tick,10000);
+    document.querySelectorAll('.url button').forEach(b=>b.addEventListener('click',async()=>{
+      try{ await navigator.clipboard.writeText(b.dataset.u); b.textContent='Copiado'; b.classList.add('ok'); }
+      catch(e){ prompt('Copie a URL:', b.dataset.u); }
+      setTimeout(()=>{b.textContent='Copiar';b.classList.remove('ok')},1600);
+    }));
+  }
+
+  if(['rect','circle','moon'].includes(mode)){
+    document.body.className='widget';
+    document.body.innerHTML='<div class="viewport" id="vp"></div>';
+    renderWidget();
+    addEventListener('resize',fit);
+    setInterval(renderWidget,60000);
+  }else{
+    renderPreview();
+  }
+})();
+</script>
+</body>
+</html>
