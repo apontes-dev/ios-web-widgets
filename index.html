@@ -10,14 +10,14 @@
   (function(){
     var w=(new URLSearchParams(location.search).get('w')||'').toLowerCase();
     var tiny=innerHeight<=240&&innerWidth<=520;
-    if(['rect','circle','moon','week','month'].indexOf(w)>-1||(!w&&tiny)){
+    if(['rect','circle','moon','week','month','weather'].indexOf(w)>-1||(!w&&tiny)){
       var root=document.documentElement, bg=(new URLSearchParams(location.search).get('bg')||'').toLowerCase();
       root.classList.add('widget');
       // Lock screen widgets: iOS renders them in vibrant mode, where brightness becomes opacity,
       // so pure black is fully see-through while white turns into frosted glass.
       // Home screen widget (month): a dark surface, since black there is just black.
       // ?bg=clear keeps a true alpha background, ?bg=black forces black.
-      if(bg==='black'||(bg!=='clear'&&w!=='month')) root.classList.add('lock');
+      if(bg==='black'||(bg!=='clear'&&w!=='month'&&w!=='weather')) root.classList.add('lock');
       else if(bg!=='clear') root.classList.add('home');
       var m=document.querySelector('meta[name="theme-color"]'); if(m) m.remove();
     }
@@ -39,8 +39,34 @@
   html.widget *{box-shadow:none!important;text-shadow:none!important}
   html.widget.lock,html.widget.lock body{background:#000!important;background-color:#000!important}
   html.widget.home,html.widget.home body{background-color:#0d0e1c!important;
-    background-image:radial-gradient(110% 120% at 0% 0%,rgba(122,101,255,.32) 0%,transparent 55%),
-      radial-gradient(90% 110% at 100% 100%,rgba(17,163,156,.22) 0%,transparent 60%)!important}
+    background-image:radial-gradient(110% 120% at 0% 0%,var(--g1,rgba(122,101,255,.32)) 0%,transparent 55%),
+      radial-gradient(90% 110% at 100% 100%,var(--g2,rgba(17,163,156,.22)) 0%,transparent 60%)!important}
+
+  /* weather (home screen, medium) */
+  .stage.wx{width:338px;height:158px}
+  .wx .side{position:absolute;left:18px;top:16px;bottom:16px;width:116px;display:flex;flex-direction:column}
+  .wx .loc{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    opacity:.65;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wx .loc svg{width:10px;height:10px;flex:none}
+  .wx .big{font-size:50px;font-weight:700;letter-spacing:-.045em;line-height:.88;margin-top:7px;font-variant-numeric:tabular-nums}
+  .wx .cond{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;margin-top:6px;line-height:1.1;white-space:nowrap}
+  .wx .cond svg{width:17px;height:17px;flex:none}
+  .wx .hl{margin-top:auto;font-size:10.5px;font-weight:600;opacity:.6;display:flex;gap:8px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .wx .right{position:absolute;left:146px;right:14px;top:14px;bottom:12px;display:flex;flex-direction:column;justify-content:space-between}
+  .wx .hours{display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:8px;border-bottom:1px solid color-mix(in srgb,var(--ink) 14%,transparent)}
+  .wx .hr{display:flex;flex-direction:column;align-items:center;gap:5px;line-height:1}
+  .wx .hr span{font-size:9.5px;font-weight:700;opacity:.55;letter-spacing:.02em}
+  .wx .hr svg{width:18px;height:18px}
+  .wx .hr b{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
+  .wx .days{display:flex;flex-direction:column;gap:5px}
+  .wx .dy{display:grid;grid-template-columns:30px 16px 26px 1fr 26px;align-items:center;gap:4px;font-size:11px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+  .wx .dy svg{width:14px;height:14px}
+  .wx .dy .mn{opacity:.55;text-align:right}
+  .wx .dy .mx{text-align:right}
+  .wx .rng{position:relative;height:4px;border-radius:2px;background:color-mix(in srgb,var(--ink) 16%,transparent)}
+  .wx .rng i{position:absolute;top:0;bottom:0;border-radius:2px;background:var(--ink)}
+  .wx .empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;opacity:.7}
+  .wx .empty svg{width:28px;height:28px}
 
   /* week strip (lock screen, rectangular) */
   .stage.week{width:170px;height:76px}
@@ -96,7 +122,7 @@
   .rect .wd{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;opacity:.7}
   .rect .dt{font-size:21px;font-weight:700;letter-spacing:-.02em;line-height:1;white-space:nowrap}
   .rect .dt span{font-size:13px;font-weight:600;opacity:.85;letter-spacing:0}
-  .rect .meta{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;opacity:.85;white-space:nowrap}
+  .rect .meta{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:600;opacity:.85;white-space:nowrap}
   .rect .meta svg{width:13px;height:13px;flex:none}
   .rect .meta .dot{opacity:.45}
 
@@ -146,7 +172,7 @@
   .opts{display:grid;gap:8px;font-size:14px;line-height:1.45;opacity:.9}
   .opts code{font:12.5px ui-monospace,Menlo,monospace;background:rgba(255,255,255,.12);padding:2px 6px;border-radius:6px}
   body.preview .foot{text-align:center;font-size:12px;opacity:.5;margin-top:24px}
-  .homemock{margin-top:28px;display:flex;flex-direction:column;align-items:center;gap:8px}
+  .homemock{margin-top:28px;display:flex;flex-direction:column;align-items:center;gap:12px}
   .homemock .cap{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.6}
   .homemock .hw{display:block;border:0;width:100%;max-width:338px;aspect-ratio:338/158;border-radius:22px;
     box-shadow:0 10px 30px rgba(0,0,0,.35)}
@@ -263,12 +289,152 @@
       <div class="grid">${rows}</div></div>`;
   }
 
+  /* ---------- weather (Open-Meteo, no key) ---------- */
+  const WKEY='ww.weather.v1';
+  const DEFAULT_LOC={lat:-23.55,lon:-46.63,name:'São Paulo'};
+  let W=null;
+  try{ W=JSON.parse(localStorage.getItem(WKEY)||'null'); }catch(e){}
+
+  // WMO weather code -> icon + labels (long for home, short for the lock screen)
+  function wmo(code,day){
+    const c=+code;
+    if(c===0) return {k:day?'sun':'moon',l:day?'Céu limpo':'Noite limpa',s:'Limpo',g:day?['rgba(255,170,60,.34)','rgba(60,140,255,.30)']:['rgba(90,80,220,.36)','rgba(20,60,150,.30)']};
+    if(c<=2)  return {k:day?'psun':'pmoon',l:c===1?'Quase limpo':'Parcialmente nublado',s:c===1?'Quase limpo':'Parc. nublado',g:day?['rgba(255,190,110,.26)','rgba(90,150,230,.28)']:['rgba(100,90,210,.30)','rgba(40,70,140,.26)']};
+    if(c===3) return {k:'cloud',l:'Nublado',s:'Nublado',g:['rgba(150,160,190,.24)','rgba(80,100,140,.24)']};
+    if(c===45||c===48) return {k:'fog',l:'Neblina',s:'Neblina',g:['rgba(170,170,190,.22)','rgba(110,120,140,.20)']};
+    if(c>=51&&c<=57) return {k:'drizzle',l:'Garoa',s:'Garoa',g:['rgba(80,140,210,.28)','rgba(30,150,160,.20)']};
+    if((c>=61&&c<=67)||(c>=80&&c<=82)) return {k:'rain',l:c>=80?'Pancadas de chuva':'Chuva',s:c>=80?'Pancadas':'Chuva',g:['rgba(60,120,210,.34)','rgba(30,160,170,.22)']};
+    if((c>=71&&c<=77)||c===85||c===86) return {k:'snow',l:'Neve',s:'Neve',g:['rgba(200,220,255,.28)','rgba(120,160,220,.24)']};
+    if(c>=95) return {k:'storm',l:'Tempestade',s:'Tempestade',g:['rgba(150,80,230,.36)','rgba(40,40,130,.30)']};
+    return {k:'cloud',l:'—',s:'—',g:null};
+  }
+  // Line icons on a 24 grid, drawn in the widget ink.
+  const CLOUD='M17.5 19H8a5 5 0 1 1 1.1-9.88A6 6 0 0 1 20.5 12a3.6 3.6 0 0 1-3 7z';
+  function wxIcon(k,size){
+    const sun='<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>';
+    const moon='<path d="M19.5 14.6A8 8 0 0 1 9.4 4.5a8 8 0 1 0 10.1 10.1z"/>';
+    const up=`<path d="${CLOUD}" transform="translate(0 -3)"/>`;
+    const body={
+      sun, moon,
+      psun:'<circle cx="8" cy="8" r="2.8"/><path d="M8 2.2v1.3M2.2 8h1.3M3.9 3.9l.9.9M12.1 3.9l-.9.9"/><path d="'+CLOUD+'" transform="translate(1.5 1.5) scale(.92)"/>',
+      pmoon:'<path d="M11.2 7.6A4.3 4.3 0 0 1 5.8 2.2a4.3 4.3 0 1 0 5.4 5.4z"/><path d="'+CLOUD+'" transform="translate(1.5 1.5) scale(.92)"/>',
+      cloud:`<path d="${CLOUD}" transform="translate(0 -1)"/>`,
+      fog:`<path d="${CLOUD}" transform="translate(2 -4) scale(.85)"/><path d="M4 18h16M7 21.5h10"/>`,
+      drizzle:up+'<path d="M8.5 19.5v.01M12.5 20.5v.01M16.5 19.5v.01M10.5 22.5v.01M14.5 22.5v.01"/>',
+      rain:up+'<path d="M9 18.5l-1 3M13 18.5l-1 3M17 18.5l-1 3"/>',
+      snow:up+'<path d="M8.5 19.5v.01M12.5 19.5v.01M16.5 19.5v.01M10.5 22v.01M14.5 22v.01"/>',
+      storm:up+'<path d="M13 15.5l-2.5 3.5h3.5l-2.5 3.5"/>',
+      pin:'<path d="M12 21s-6-5.6-6-10.5a6 6 0 0 1 12 0C18 15.4 12 21 12 21z"/><circle cx="12" cy="10.5" r="2"/>'
+    }[k]||'';
+    return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+  }
+  const r0=n=>Math.round(n);
+
+  function locFromParams(){
+    const lat=parseFloat(qs.get('lat')), lon=parseFloat(qs.get('lon'));
+    if(isFinite(lat)&&isFinite(lon)) return {lat,lon,name:qs.get('name')||null};
+    return null;
+  }
+  async function locate(){
+    const p=locFromParams(); if(p) return p;
+    const city=qs.get('city');
+    if(city){
+      const cached=W&&W.loc&&W.loc.q===city.toLowerCase()?W.loc:null;
+      if(cached) return cached;
+      const r=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&language=pt&name='+encodeURIComponent(city));
+      const g=(await r.json()).results?.[0];
+      if(g) return {lat:g.latitude,lon:g.longitude,name:g.name,q:city.toLowerCase()};
+    }
+    try{
+      const pos=await new Promise((res,rej)=>{
+        if(!navigator.geolocation) return rej();
+        navigator.geolocation.getCurrentPosition(res,rej,{timeout:5000,maximumAge:30*60e3});
+      });
+      return {lat:pos.coords.latitude,lon:pos.coords.longitude,name:null};
+    }catch(e){}
+    if(W&&W.loc) return W.loc;
+    return DEFAULT_LOC;
+  }
+  async function placeName(loc){
+    if(loc.name) return loc.name;
+    // Reuse the cached name if we have not moved more than ~5 km.
+    if(W&&W.loc&&W.loc.name&&Math.abs(W.loc.lat-loc.lat)<.05&&Math.abs(W.loc.lon-loc.lon)<.05) return W.loc.name;
+    try{
+      const r=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${loc.lat}&longitude=${loc.lon}&localityLanguage=pt`);
+      const j=await r.json();
+      return j.city||j.locality||j.principalSubdivision||'';
+    }catch(e){ return ''; }
+  }
+  let loading=null;
+  function loadWeather(){
+    if(loading) return loading;
+    loading=(async()=>{
+      try{
+        const loc=await locate();
+        loc.name=await placeName(loc);
+        const url='https://api.open-meteo.com/v1/forecast?latitude='+loc.lat.toFixed(3)+'&longitude='+loc.lon.toFixed(3)+
+          '&current=temperature_2m,apparent_temperature,weather_code,is_day'+
+          '&hourly=temperature_2m,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min'+
+          '&timezone=auto&forecast_days=4';
+        const d=await (await fetch(url)).json();
+        const floor=d.current.time.slice(0,13)+':00';
+        let hi=d.hourly.time.indexOf(floor); if(hi<0) hi=0;
+        const hours=[];
+        for(let k=1;k<=4;k++){
+          const j=hi+k; if(j>=d.hourly.time.length) break;
+          hours.push({h:+d.hourly.time[j].slice(11,13),t:d.hourly.temperature_2m[j],c:d.hourly.weather_code[j],day:d.hourly.is_day[j]});
+        }
+        const days=[];
+        for(let k=1;k<d.daily.time.length&&days.length<3;k++){
+          days.push({d:d.daily.time[k],c:d.daily.weather_code[k],max:d.daily.temperature_2m_max[k],min:d.daily.temperature_2m_min[k]});
+        }
+        W={loc,at:Date.now(),
+          cur:{t:d.current.temperature_2m,f:d.current.apparent_temperature,c:d.current.weather_code,day:d.current.is_day},
+          today:{max:d.daily.temperature_2m_max[0],min:d.daily.temperature_2m_min[0]},hours,days};
+        try{ localStorage.setItem(WKEY,JSON.stringify(W)); }catch(e){}
+      }catch(e){ /* keep the cached reading */ }
+      loading=null;
+      if(document.getElementById('vp')) renderWidget();
+    })();
+    return loading;
+  }
+
+  function rectWeather(){
+    if(!W) return `${wxIcon('cloud',13)}<span>—°</span><span class="cond">Clima</span>`;
+    const m=wmo(W.cur.c,W.cur.day);
+    return `${wxIcon(m.k,13)}<span>${r0(W.cur.t)}°</span><span class="cond">${m.s}</span>`;
+  }
+  function weatherHTML(){
+    if(!W) return `<div class="stage wx"><div class="empty">${wxIcon('psun',28)}<span>Carregando o clima…</span></div></div>`;
+    const m=wmo(W.cur.c,W.cur.day);
+    if(m.g){ document.documentElement.style.setProperty('--g1',m.g[0]); document.documentElement.style.setProperty('--g2',m.g[1]); }
+    const hours=[`<div class="hr"><span>Agora</span>${wxIcon(m.k,18)}<b>${r0(W.cur.t)}°</b></div>`]
+      .concat(W.hours.map(h=>`<div class="hr"><span>${h.h}h</span>${wxIcon(wmo(h.c,h.day).k,18)}<b>${r0(h.t)}°</b></div>`)).join('');
+    const lo=Math.min(...W.days.map(d=>d.min)), hi=Math.max(...W.days.map(d=>d.max)), span=Math.max(hi-lo,1);
+    const days=W.days.map(d=>{
+      const name=new Intl.DateTimeFormat('pt-BR',{weekday:'short'}).format(new Date(d.d+'T12:00')).replace('.','');
+      const a=(d.min-lo)/span*100, b=(d.max-lo)/span*100;
+      return `<div class="dy"><span>${name.charAt(0).toUpperCase()+name.slice(1)}</span>${wxIcon(wmo(d.c,1).k,14)}
+        <span class="mn">${r0(d.min)}°</span><div class="rng"><i style="left:${a.toFixed(1)}%;right:${(100-b).toFixed(1)}%"></i></div><span class="mx">${r0(d.max)}°</span></div>`;
+    }).join('');
+    return `<div class="stage wx" role="img" aria-label="${W.loc.name||''} ${r0(W.cur.t)} graus, ${m.l}">
+      <div class="side">
+        <div class="loc">${wxIcon('pin',10)}<span>${W.loc.name||'Aqui'}</span></div>
+        <div class="big">${r0(W.cur.t)}°</div>
+        <div class="cond">${wxIcon(m.k,17)}<span>${m.l}</span></div>
+        <div class="hl"><span>Máx ${r0(W.today.max)}°</span><span>Mín ${r0(W.today.min)}°</span></div>
+      </div>
+      <div class="right"><div class="hours">${hours}</div><div class="days">${days}</div></div></div>`;
+  }
+
   /* ---------- widget mode ---------- */
   function renderWidget(){
     const i=info();
     let html='';
     if(mode==='week'){
       html=weekHTML(i);
+    }else if(mode==='weather'){
+      html=weatherHTML();
     }else if(mode==='month'){
       html=monthHTML(i);
     }else if(mode==='circle'){
@@ -283,7 +449,7 @@
         <div class="col">
           <div class="wd">${i.weekday}</div>
           <div class="dt">${i.day} <span>${i.monthLong}</span></div>
-          <div class="meta">${moonSVG(i.moon.p,13,4)}<span>${i.moon.short}</span><span class="dot wk">·</span><span class="wk">Sem ${i.week}</span></div>
+          <div class="meta">${rectWeather()}<span class="dot wk">·</span><span class="wk">Sem ${i.week}</span></div>
         </div></div>`;
     }
     document.getElementById('vp').innerHTML=html;
@@ -292,7 +458,12 @@
   function fit(){
     // Drop the week label if the meta row would be clipped.
     const meta=document.querySelector('.rect .meta');
-    if(meta && meta.scrollWidth>meta.clientWidth+0.5) meta.querySelectorAll('.wk').forEach(e=>e.remove());
+    const clipped=()=>meta && meta.scrollWidth>meta.clientWidth+0.5;
+    if(clipped()) meta.querySelectorAll('.wk').forEach(e=>e.remove());
+    if(meta){ let f=10; while(clipped()&&f>8.5){ f-=.5; meta.style.fontSize=f+'px'; } }
+    if(clipped()) meta.querySelectorAll('.cond').forEach(e=>e.remove());
+    const cond=document.querySelector('.wx .cond');
+    if(cond){ let f=13.5; while(cond.scrollWidth>cond.clientWidth+0.5&&f>10){ f-=.5; cond.style.fontSize=f+'px'; } }
     const s=document.querySelector('.stage'); if(!s) return;
     const w=s.offsetWidth,h=s.offsetHeight;
     const k=Math.min(innerWidth/w, innerHeight/h);
@@ -304,11 +475,12 @@
     document.body.className='preview';
     const base=location.origin+location.pathname;
     const urls=[
-      {tag:'Retangular',q:'?w=rect',desc:'Progresso do ano, data, fase da lua e semana'},
+      {tag:'Retangular',q:'?w=rect',desc:'Progresso do ano, data, clima e semana'},
       {tag:'Circular',q:'?w=circle',desc:'Dia do mês com anel de progresso do mês'},
       {tag:'Lua',q:'?w=moon',desc:'Fase da lua com % iluminada'},
       {tag:'Semana',q:'?w=week',desc:'Bloqueio, retangular: semana atual com hoje destacado'},
-      {tag:'Calendário',q:'?w=month',desc:'Tela inicial, médio: mês inteiro, data e progresso do ano'}
+      {tag:'Calendário',q:'?w=month',desc:'Tela inicial, médio: mês inteiro, data e progresso do ano'},
+      {tag:'Clima',q:'?w=weather',desc:'Tela inicial, médio: agora, próximas horas e 3 dias'}
     ];
     document.body.innerHTML=`
       <div class="wall"></div>
@@ -326,6 +498,7 @@
 
         <section class="homemock">
           <div class="cap">Tela inicial</div>
+          <iframe class="hw" src="${base}?w=weather" title="Widget clima"></iframe>
           <iframe class="hw" src="${base}?w=month" title="Widget calendário"></iframe>
         </section>
 
@@ -345,7 +518,8 @@
             <li>Copie uma das URLs acima e crie um novo widget no app colando o link.</li>
             <li>Na tela de bloqueio o fundo preto da página aparece transparente. Se surgir um vidro fosco, desative o <b>fundo transparente</b> do app.</li>
             <li>Tela de bloqueio: toque e segure → <b>Personalizar</b> → adicione o Widget Web no tamanho certo: retangular para <code style="font-size:12px">rect</code> e <code style="font-size:12px">week</code>, circular para <code style="font-size:12px">circle</code> e <code style="font-size:12px">moon</code>.</li>
-            <li>Tela inicial: adicione o Widget Web no tamanho <b>médio</b> com a URL <code style="font-size:12px">month</code>.</li>
+            <li>Tela inicial: adicione o Widget Web no tamanho <b>médio</b> com a URL <code style="font-size:12px">month</code> ou <code style="font-size:12px">weather</code>.</li>
+            <li>Clima: permita a localização no app. Se ele não tiver acesso, use <code style="font-size:12px">&amp;city=</code> com o nome da cidade.</li>
             <li>Escolha um intervalo de atualização automática (ex.: a cada hora) para manter data e lua em dia.</li>
           </ol>
         </section>
@@ -355,6 +529,7 @@
           <div class="opts">
             <div><code>&amp;c=ffffff</code> muda a cor (hex sem #). Padrão: branco.</div>
             <div><code>&amp;bg=clear</code> fundo transparente de verdade; <code>&amp;bg=black</code> fundo preto.</div>
+            <div><code>&amp;city=Campinas</code> ou <code>&amp;lat=-23.55&amp;lon=-46.63</code> fixa o local do clima. Sem isso, usa a localização do aparelho.</div>
             <div><code>&amp;hemi=n</code> mostra a lua como no hemisfério norte. Padrão: sul (Brasil).</div>
           </div>
         </section>
@@ -374,13 +549,14 @@
     }));
   }
 
-  if(['rect','circle','moon','week','month'].includes(mode)){
+  if(['rect','circle','moon','week','month','weather'].includes(mode)){
     document.documentElement.classList.add('widget');
     document.body.className='widget';
     document.body.innerHTML='<div class="viewport" id="vp"></div>';
     renderWidget();
     addEventListener('resize',fit);
     setInterval(renderWidget,60000);
+    if(mode==='rect'||mode==='weather'){ loadWeather(); setInterval(loadWeather,15*60e3); }
   }else{
     renderPreview();
   }

@@ -8,11 +8,12 @@ No build step, no dependencies: one `index.html`.
 
 | URL | Size | Shows |
 | --- | --- | --- |
-| `?w=rect` | Rectangular | Year-progress ring, weekday, date, moon phase, ISO week |
+| `?w=rect` | Rectangular | Year-progress ring, weekday, date, current weather, ISO week |
 | `?w=circle` | Circular | Day of the month with a month-progress ring |
 | `?w=moon` | Circular | Moon phase with % illuminated |
 | `?w=week` | Rectangular | This week, Sunday to Saturday, with today highlighted |
 | `?w=month` | Home screen, medium | Full month grid, big date, moon phase, year progress |
+| `?w=weather` | Home screen, medium | Current temperature and condition, next 4 hours, next 3 days with temperature ranges |
 
 Opening the page without `?w=` shows a lock screen preview with copyable links. If the page is loaded in a widget-sized viewport without `?w=`, it picks `rect` for wide spaces and `circle` for square ones.
 
@@ -20,9 +21,12 @@ Opening the page without `?w=` shows a lock screen preview with copyable links. 
 
 - `&c=ffffff` sets the widget color (hex, no `#`). Default is white. Keep it light: on the lock screen, brightness is what shows.
 - `&bg=clear` uses a true alpha-transparent background; `&bg=black` forces black. By default lock screen widgets are drawn on pure black, because iOS renders lock screen widgets in vibrant mode where black is fully see-through and anything lighter becomes frosted glass. The home screen `month` widget defaults to a dark gradient surface.
+- `&city=Campinas` or `&lat=-23.55&lon=-46.63` (optionally `&name=Casa`) pins the weather location. Otherwise the device location is used, then the last known location, then São Paulo.
 - `&hemi=n` draws the moon as seen from the northern hemisphere. Default is southern (Brazil).
 
 Labels are in Brazilian Portuguese and dates use the device's local time.
+
+Weather comes from [Open-Meteo](https://open-meteo.com) (free, no API key), with place names from BigDataCloud's free reverse geocoder. The last reading is cached in `localStorage` so the widget renders instantly while it refreshes; it refetches every 15 minutes while open. The home weather widget tints its background by the current condition.
 
 ## Hosting
 
