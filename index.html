@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Lock Widgets</title>
 <meta name="theme-color" content="#0b0d1a">
+<script>
+  // Runs before first paint so widget mode never flashes an opaque background.
+  (function(){
+    var w=(new URLSearchParams(location.search).get('w')||'').toLowerCase();
+    var tiny=innerHeight<=240&&innerWidth<=520;
+    if(['rect','circle','moon'].indexOf(w)>-1||(!w&&tiny)){
+      document.documentElement.classList.add('widget');
+      var m=document.querySelector('meta[name="theme-color"]'); if(m) m.remove();
+    }
+  })();
+</script>
 <style>
   :root{
     --ink:#ffffff;
@@ -15,7 +26,10 @@
   body{font-family:var(--font);-webkit-font-smoothing:antialiased;color:var(--ink)}
 
   /* ---------- WIDGET MODE ---------- */
-  body.widget{background:transparent;overflow:hidden}
+  html.widget,html.widget body,body.widget{
+    background:transparent!important;background-color:rgba(0,0,0,0)!important;background-image:none!important;
+    color-scheme:only light;overflow:hidden}
+  html.widget *{box-shadow:none!important;text-shadow:none!important}
   .viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
   .stage{position:relative;flex:none;transform-origin:center center;color:var(--ink)}
   .stage.rect{width:170px;height:76px}
@@ -108,7 +122,9 @@
     const illum = (1-Math.cos(2*Math.PI*p))/2;
     const names=['Lua nova','Crescente','Quarto crescente','Crescente gibosa','Lua cheia','Minguante gibosa','Quarto minguante','Minguante'];
     const idx = Math.floor((p*8)+0.5)%8;
-    return {p, illum, name:names[idx]};
+    // Short labels for the narrow rectangular widget; the icon already shows waxing vs waning.
+    const short=['Lua nova','Crescente','Quarto cresc.','Gibosa','Lua cheia','Gibosa','Quarto ming.','Minguante'];
+    return {p, illum, name:names[idx], short:short[idx]};
   }
   function moonSVG(p, size, strokeW){
     const r=50, cx=50, cy=50;
@@ -171,13 +187,16 @@
         <div class="col">
           <div class="wd">${i.weekday}</div>
           <div class="dt">${i.day} <span>${i.monthLong}</span></div>
-          <div class="meta">${moonSVG(i.moon.p,13,4)}<span>${i.moon.name}</span><span class="dot">·</span><span>Sem ${i.week}</span></div>
+          <div class="meta">${moonSVG(i.moon.p,13,4)}<span>${i.moon.short}</span><span class="dot wk">·</span><span class="wk">Sem ${i.week}</span></div>
         </div></div>`;
     }
     document.getElementById('vp').innerHTML=html;
     fit();
   }
   function fit(){
+    // Drop the week label if the meta row would be clipped.
+    const meta=document.querySelector('.rect .meta');
+    if(meta && meta.scrollWidth>meta.clientWidth+0.5) meta.querySelectorAll('.wk').forEach(e=>e.remove());
     const s=document.querySelector('.stage'); if(!s) return;
     const w=s.offsetWidth,h=s.offsetHeight;
     const k=Math.min(innerWidth/w, innerHeight/h);
@@ -249,6 +268,7 @@
   }
 
   if(['rect','circle','moon'].includes(mode)){
+    document.documentElement.classList.add('widget');
     document.body.className='widget';
     document.body.innerHTML='<div class="viewport" id="vp"></div>';
     renderWidget();
